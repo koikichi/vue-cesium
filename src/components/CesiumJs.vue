@@ -6,6 +6,11 @@
 import Cesium from 'cesium/Cesium';
 import widgets from 'cesium/Widgets/widgets.css';
 
+var image = {
+  image: 'http://localhost:8000/images/track.png',
+  width: 28,
+  height: 28
+};
 export default {
   name: 'CesiumJs',
   data() {
@@ -20,8 +25,9 @@ export default {
       }),
       baseLayerPicker: false,
       geocoder: false
+      // requestRenderMode: true
+      // skyBox: false
     });
-
     // viewer.entities.add({
     //   position: Cesium.Cartesian3.fromDegrees(-35, 138),
     //   billboard: {
@@ -34,13 +40,13 @@ export default {
     //     // height: 64
     //   }
     // });
-    this.viewer.entities.add({
-      position: Cesium.Cartesian3.fromDegrees(138, -35),
-      point: {
-        pixelSize: 10,
-        color: Cesium.Color.YELLOW
-      }
-    });
+    // this.viewer.entities.add({
+    //   position: Cesium.Cartesian3.fromDegrees(138, -35),
+    //   point: {
+    //     pixelSize: 10,
+    //     color: Cesium.Color.YELLOW
+    //   }
+    // });
 
     var ws = new WebSocket('ws://localhost:8181');
     ws.onopen = function() {
@@ -73,55 +79,90 @@ export default {
     // };
   },
   methods: {
+    // onWsMessage: function(ev) {
+    //   var jsondata = JSON.parse(ev.data);
+    //   //   var jsondata = JSON.parse(ev.data);
+    //   //   console.log(jsondata);
+    //   //   this.viewer.entities.removeAll();
+    //   for (var i = 0; i < jsondata.length; i++) {
+    //     var entity = this.viewer.entities.getOrCreateEntity(i);
+    //     entity.position = Cesium.Cartesian3.fromDegrees(
+    //       jsondata[i].longitude,
+    //       jsondata[i].latitude
+    //     );
+    //     //for a point
+    //     // entity.point = {
+    //     //   pixelSize: 10,
+    //     //   color: Cesium.Color.YELLOW
+    //     // };
+    //     // for a billboard
+    //     // entity.billboard = {
+    //     //   image: 'http://localhost:8000/images/track.png',
+    //     //   width: 16,
+    //     //   height: 16
+    //     // };
+    //     entity.billboard = image;
+    //     //for a polygon
+    //     // this.viewer.entities.add({
+    //     //   id: jsondata[i].id,
+    //     //   position: Cesium.Cartesian3.fromDegrees(
+    //     //     jsondata[i].longitude,
+    //     //     jsondata[i].latitude,
+    //     //     150000
+    //     //   ),
+    //     //   ellipse: {
+    //     //     semiMinorAxis: 300000.0,
+    //     //     semiMajorAxis: 300000.0,
+    //     //     height: 200000.0,
+    //     //     material: Cesium.Color.GREEN,
+    //     //     outline: true // height must be set for outline to display
+    //     //   }
+    //     // });
+    //     // this.viewer.entities.add({
+    //     //   id: jsondata[i].id,
+    //     //   position: Cesium.Cartesian3.fromDegrees(
+    //     //     jsondata[i].longitude,
+    //     //     jsondata[i].latitude
+    //     //   ),
+    //     //   point: {
+    //     //     pixelSize: 10,
+    //     //     color: Cesium.Color.YELLOW
+    //     //   }
+    //     // });
+    //   }
+    // },
     onWsMessage: function(ev) {
       var jsondata = JSON.parse(ev.data);
       //   var jsondata = JSON.parse(ev.data);
       //   console.log(jsondata);
       //   this.viewer.entities.removeAll();
-      for (var i = 0; i < jsondata.length; i++) {
-        var entity = this.viewer.entities.getOrCreateEntity(i);
-        entity.position = Cesium.Cartesian3.fromDegrees(
-          jsondata[i].longitude,
-          jsondata[i].latitude
-        );
-        //for a point
-        // entity.point = {
-        //   pixelSize: 10,
-        //   color: Cesium.Color.YELLOW
-        // };
-        // for a billboard
-        entity.billboard = {
-          image: 'http://localhost:8000/images/track.png',
-          width: 16,
-          height: 16
-        };
-        //for a polygon
-        // this.viewer.entities.add({
-        //   id: jsondata[i].id,
-        //   position: Cesium.Cartesian3.fromDegrees(
-        //     jsondata[i].longitude,
-        //     jsondata[i].latitude,
-        //     150000
-        //   ),
-        //   ellipse: {
-        //     semiMinorAxis: 300000.0,
-        //     semiMajorAxis: 300000.0,
-        //     height: 200000.0,
-        //     material: Cesium.Color.GREEN,
-        //     outline: true // height must be set for outline to display
-        //   }
-        // });
-        // this.viewer.entities.add({
-        //   id: jsondata[i].id,
-        //   position: Cesium.Cartesian3.fromDegrees(
-        //     jsondata[i].longitude,
-        //     jsondata[i].latitude
-        //   ),
-        //   point: {
-        //     pixelSize: 10,
-        //     color: Cesium.Color.YELLOW
-        //   }
-        // });
+
+      if (this.viewer.entities.values.length == 0) {
+        for (var i = 0; i < jsondata.length; i++) {
+          this.viewer.entities.add({
+            id: jsondata[i].id,
+            position: Cesium.Cartesian3.fromDegrees(
+              jsondata[i].longitude,
+              jsondata[i].latitude
+            ),
+            billboard: image
+          });
+        }
+      } else {
+        for (var i = 0; i < jsondata.length; i++) {
+          // this.viewer.entities.getById(
+          //   i
+          // ).position = Cesium.Cartesian3.fromDegrees(
+          //   jsondata[i].longitude,
+          //   jsondata[i].latitude
+          // );
+          this.viewer.entities.values[
+            i
+          ].position = Cesium.Cartesian3.fromDegrees(
+            jsondata[i].longitude,
+            jsondata[i].latitude
+          );
+        }
       }
     }
   }
@@ -130,8 +171,10 @@ export default {
 
 <style>
 #cesiumContainer {
-  width: 100%;
-  height: 100%;
+  /* width: 100%; */
+  /* height: 100%; */
+  width: 1024;
+  height: 768;
   margin: 0;
   padding: 0;
   overflow: hidden;
